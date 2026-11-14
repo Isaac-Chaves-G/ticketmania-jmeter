@@ -4,14 +4,11 @@ Pruebas de rendimiento de una API de compra de boletas con Apache JMeter. El flu
 
 ## Entrega de experimentación local
 
-- [Documento del taller con las diez respuestas y sus capturas](entrega/Taller_Que_pasaria_si_Entrega.docx).
-- [Evidencias de las 26 mediciones completas](entrega/Evidencias_Experimentacion.zip).
+[Documento del taller con las diez respuestas y sus capturas](entrega/Taller_Que_pasaria_si_Entrega.docx).
 
-Se ejecutaron 13 escenarios con dos repeticiones por escenario. El documento compara ambas repeticiones e incluye 27 capturas de configuración y resultados, sin duplicarlas cuando sirven para varias preguntas. El ZIP conserva los JTL originales, las mediciones de PerfMon, los logs, las configuraciones, los planes de cada ejecución y los 26 reportes HTML. `comparacion.json` contiene las métricas y los hashes SHA 256 de los archivos originales.
+Se ejecutaron 13 escenarios con dos repeticiones por escenario. El documento integra las configuraciones, los resultados comparados, las limitaciones y 19 capturas representativas de configuración, reportes y PerfMon. Las evidencias que sirven para varias preguntas se referencian sin duplicarlas.
 
-Para consultar las evidencias, extraer todo el ZIP conservando sus carpetas. Los reportes se encuentran en `pruebas/experimentacion/resultados/20261113_224419/<escenario>_r<repeticion>/reporte_verificado/index.html`. Sus recursos estáticos se comparten entre reportes; no mover un HTML por separado. Las capturas seleccionadas están en la carpeta `capturas` del mismo lote.
-
-Las mediciones son locales: la API y JMeter comparten computador. Los errores observados bajo carga se conservan en los resultados y se analizan en el documento. La prueba sin pausas que quedó incompleta se repitió y el intento parcial quedó fuera de la entrega.
+Las mediciones son locales: la API y JMeter comparten computador. Los errores observados bajo carga se analizan en el documento.
 
 ## Archivos
 
@@ -24,6 +21,7 @@ Las mediciones son locales: la API y JMeter comparten computador. Los errores ob
 | `pruebas/experimentacion/datos.csv` | Tarifas, cantidades y precios esperados para validar el total. |
 | `pruebas/experimentacion/escenarios.json` | Parámetros de los 13 escenarios. |
 | `.github/workflows/rendimiento.yml` | Ejecución del plan base y publicación del reporte. |
+| `entrega/Taller_Que_pasaria_si_Entrega.docx` | Documento individual del taller con resultados y capturas integradas. |
 
 ## Requisitos
 
