@@ -2,6 +2,17 @@
 
 Pruebas de rendimiento de una API de compra de boletas con Apache JMeter. El flujo consulta tarifas, crea una reserva y realiza el pago.
 
+## Entrega de experimentación local
+
+- [Documento del taller con las diez respuestas y sus capturas](entrega/Taller_Que_pasaria_si_Entrega.docx).
+- [Evidencias de las 26 mediciones completas](entrega/Evidencias_Experimentacion.zip).
+
+Se ejecutaron 13 escenarios con dos repeticiones por escenario. El documento compara ambas repeticiones e incluye 27 capturas de configuración y resultados, sin duplicarlas cuando sirven para varias preguntas. El ZIP conserva los JTL originales, las mediciones de PerfMon, los logs, las configuraciones, los planes de cada ejecución y los 26 reportes HTML. `comparacion.json` contiene las métricas y los hashes SHA 256 de los archivos originales.
+
+Para consultar las evidencias, extraer todo el ZIP conservando sus carpetas. Los reportes se encuentran en `pruebas/experimentacion/resultados/20261113_224419/<escenario>_r<repeticion>/reporte_verificado/index.html`. Sus recursos estáticos se comparten entre reportes; no mover un HTML por separado. Las capturas seleccionadas están en la carpeta `capturas` del mismo lote.
+
+Las mediciones son locales: la API y JMeter comparten computador. Los errores observados bajo carga se conservan en los resultados y se analizan en el documento. La prueba sin pausas que quedó incompleta se repitió y el intento parcial quedó fuera de la entrega.
+
 ## Archivos
 
 | Ruta | Contenido |
