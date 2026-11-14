@@ -1,0 +1,119 @@
+name: Rendimiento TicketMania
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rendimiento:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar JMeter 5.6.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          curl --fail --location --retry 3 -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
+          curl --fail --location --retry 3 -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz.sha512
+          sha512sum --check apache-jmeter-5.6.3.tgz.sha512
+          tar -xzf apache-jmeter-5.6.3.tgz
+          echo "$RUNNER_TEMP/apache-jmeter-5.6.3/bin" >> "$GITHUB_PATH"
+
+      - name: Iniciar API en segundo plano
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup python3 -u api/ticketmania_simple.py > "$RUNNER_TEMP/ticketmania-api.log" 2>&1 &
+          echo "$!" > "$RUNNER_TEMP/ticketmania-api.pid"
+
+      - name: Esperar a que la API este lista
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import time
+          from urllib.error import URLError
+          from urllib.request import urlopen
+
+          for attempt in range(30):
+              try:
+                  with urlopen('http://127.0.0.1:8080/api/salud', timeout=2) as response:
+                      if response.status == 200 and json.load(response) == {'estado': 'OK'}:
+                          print('API lista en 127.0.0.1:8080')
+                          break
+              except (URLError, TimeoutError, ValueError):
+                  pass
+              time.sleep(1)
+          else:
+              raise SystemExit('La API no respondio correctamente dentro del tiempo de espera.')
+          PY
+
+      - name: Ejecutar JMeter sin interfaz y generar reporte
+        working-directory: pruebas/jmeter
+        shell: bash
+        run: |
+          jmeter -n -t Ticketmania.jmx -l resultados.jtl -j jmeter.log -e -o reporte
+
+      - name: Comprobar resultados del JTL
+        working-directory: pruebas/jmeter
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import csv
+          from collections import Counter
+          from pathlib import Path
+
+          path = Path('resultados.jtl')
+          if not path.is_file():
+              raise SystemExit('JMeter no genero resultados.jtl.')
+          with path.open(encoding='utf-8-sig', newline='') as source:
+              reader = csv.DictReader(source)
+              if not {'label', 'success'}.issubset(reader.fieldnames or []):
+                  raise SystemExit('El JTL no contiene las columnas label y success.')
+              rows = list(reader)
+          failed = [row for row in rows if row['success'].strip().lower() != 'true']
+          counts = Counter(row['label'] for row in rows)
+          print(f'Muestras: {len(rows)}; fallidas: {len(failed)}; por peticion: {dict(counts)}')
+          if failed:
+              for row in failed[:10]:
+                  print(row['label'], row.get('responseCode'), row.get('failureMessage'))
+              raise SystemExit('La prueba contiene peticiones fallidas.')
+          expected = Counter({'Tarifas': 200, 'SeleccionTarifaYCantidad': 200, 'Pago': 200})
+          if counts != expected:
+              raise SystemExit('Se esperaban 200 consultas, 200 reservas y 200 pagos: 600 muestras.')
+          PY
+
+      - name: Guardar reporte y evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-rendimiento
+          path: |
+            pruebas/jmeter/reporte/
+            pruebas/jmeter/resultados.jtl
+            pruebas/jmeter/jmeter.log
+            ${{ runner.temp }}/ticketmania-api.log
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Detener API
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/ticketmania-api.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/ticketmania-api.pid")" 2>/dev/null || true
+          fi
