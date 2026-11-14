@@ -111,7 +111,7 @@ El workflow `Rendimiento TicketMania` se ejecuta con cada push a `main` o manual
 4. Revisa el JTL y falla si contiene peticiones fallidas o no incluye exactamente 200 consultas, 200 reservas y 200 pagos. JMeter por sí solo no devuelve un código de error por cada petición fallida.
 5. Sube el artefacto **reporte-rendimiento** con `if: always()`, incluyendo el HTML, el JTL y los logs disponibles. Finalmente detiene la API.
 
-Para consultar los resultados, abre la ejecución en Actions y descarga **reporte-rendimiento** desde **Artifacts**. Extrae el ZIP completo y abre `reporte/index.html`; el HTML requiere las carpetas de recursos que lo acompañan. El artefacto se conserva 14 días.
+Para consultar los resultados, abre la ejecución en Actions y descarga **reporte-rendimiento** desde **Artifacts**. Extrae el ZIP completo y abre `ticketmania-jmeter/ticketmania-jmeter/pruebas/jmeter/reporte/index.html`; el HTML requiere las carpetas de recursos que lo acompañan. El ZIP conserva esa estructura porque también incluye el log de la API desde la carpeta temporal del runner. El artefacto se conserva 14 días.
 
 El pipeline prueba el proyecto en una máquina temporal; no publica una API permanente. Si falla la instalación o el arranque antes de ejecutar JMeter, puede no existir un reporte HTML: los logs disponibles permiten identificar el fallo.
 
@@ -129,7 +129,20 @@ La petición con la mayor media tiene el mayor costo temporal observado. Con una
 
 ## Estado de la medición
 
-La ejecución completa de 200 usuarios y su reporte están pendientes de comprobar en GitHub Actions. No se atribuyen tiempos, throughput ni mediciones de CPU o memoria a una ejecución que aún no ha terminado.
+La [ejecución #1](https://github.com/Isaac-Chaves-G/ticketmania-jmeter/actions/runs/43549429572) terminó en **success** el 13 de noviembre de 2026, a las 10:07 p. m. (Colombia). Se ejecutó el commit `bfda9ed35500e1f42bffaf0788680e5965ed0ae7` con Ubuntu, Java Temurin 17 y JMeter 5.6.3.
+
+| Petición | Muestras | Fallidas |
+| --- | ---: | ---: |
+| Tarifas | 200 | 0 |
+| SeleccionTarifaYCantidad | 200 | 0 |
+| Pago | 200 | 0 |
+| **Total** | **600** | **0** |
+
+La consola de JMeter registró aproximadamente **5 minutos y 1 segundo de medición**, **2,0 peticiones/segundo**, **1 ms de media** y **20 ms de máximo**. Son valores globales redondeados del resumen de consola; el dashboard contiene el detalle por petición y los percentiles.
+
+El resultado confirma que los 200 usuarios completaron la compra y que la aserción `APROBADO` pasó en los 200 pagos. No establece el límite de capacidad: la llegada fue gradual, cada usuario recorrió el flujo una sola vez y la API compartió máquina con JMeter. No se midieron CPU ni memoria con PerfMon en esta ejecución.
+
+[Descargar el reporte y las evidencias](https://github.com/Isaac-Chaves-G/ticketmania-jmeter/actions/runs/43549429572/artifacts/14095648674). El ZIP contiene el HTML, el JTL y los logs.
 
 ## Verificación y límites
 
